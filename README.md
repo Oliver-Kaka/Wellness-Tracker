@@ -123,8 +123,8 @@ The stats bar and mini-card grid always operate on the **most recent seven entri
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/Oliver-Kaka/Wellness-Tracker.git
+cd Wellness-Tracker
 ```
 
 ### Step 2 — Open the file
