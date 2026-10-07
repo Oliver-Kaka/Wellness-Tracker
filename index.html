@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Wellness Log — Demo Only</title>
+  <style>
+    /* ── Reset & base ────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #ffffff;
+      --surface:  #f7f8fa;
+      --border:   #e5e7eb;
+      --text:     #1f2328;
+      --muted:    #57606a;
+      --accent:   #2563eb;
+      --accent-h: #1d4ed8;
+      --danger:   #dc2626;
+      --warn-bg:  #fefce8;
+      --warn-bd:  #ca8a04;
+      --warn-tx:  #854d0e;
+      --edit-bg:  #eff6ff;
+      --edit-bd:  #2563eb;
+      --radius:   6px;
+      --gap:      1rem;
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ── Disclaimer banner ───────────────────────────────────────── */
+    .disclaimer {
+      background: var(--warn-bg);
+      border-bottom: 2px solid var(--warn-bd);
+      color: var(--warn-tx);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 0.55rem 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 1rem 1rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    header p.subtitle {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Page wrapper ────────────────────────────────────────────── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    section > h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    /* ── Form ────────────────────────────────────────────────────── */
+    #section-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.25rem 1rem;
+    }
+    #section-form.edit-mode {
+      border-color: var(--edit-bd);
+      background: var(--edit-bg);
+    }
+    #edit-banner {
+      display: none;
+      background: var(--edit-bd);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+      margin: -1.25rem -1.25rem 1rem;
+      letter-spacing: 0.02em;
+    }
+    #section-form.edit-mode #edit-banner { display: block; }
+
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+    }
+    @media (max-width: 500px) {
+      .field-group { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+    label .hint {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+    input:hover, select:hover, textarea:hover { border-color: #9ca3af; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+    .char-count.over { color: var(--danger); font-weight: 700; }
+
+    .field-error {
+      font-size: 0.8rem;
+      color: var(--danger);
+      font-weight: 600;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 0.65rem;
+      margin-top: 1.1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 1.1rem;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1.4;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .btn-danger-ghost {
+      background: transparent;
+      color: var(--danger);
+      border-color: var(--border);
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+    }
+    .btn-danger-ghost:hover { background: #fee2e2; border-color: var(--danger); }
+
+    .btn-edit {
+      background: transparent;
+      color: var(--accent);
+      border-color: var(--border);
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+    }
+    .btn-edit:hover { background: var(--edit-bg); border-color: var(--accent); }
+
+    /* ── Entry list ──────────────────────────────────────────────── */
+    #entries-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .entry-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.4rem 1rem;
+      align-items: start;
+    }
+
+    .entry-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+      align-items: baseline;
+    }
+    .entry-date {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+    .entry-pill {
+      font-size: 0.8rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.55rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .entry-notes {
+      grid-column: 1 / -1;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 0.1rem;
+    }
+    .entry-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 2rem 1rem;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* ── Stats bar ───────────────────────────────────────────────── */
+    #stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 400px) {
+      #stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.5rem 0.5rem;
+      text-align: center;
+    }
+    .stat-tile .st-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+    .stat-tile .st-value {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .stat-tile .st-unit {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .stats-empty {
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 0.5rem 0 0.75rem;
+    }
+    .stats-disclaimer {
+      font-size: 0.75rem;
+      color: var(--warn-tx);
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-bd);
+      border-radius: var(--radius);
+      padding: 0.35rem 0.65rem;
+      margin-bottom: 0.9rem;
+    }
+
+    /* ── Privacy notice (details/summary) ───────────────────────── */
+    .privacy-notice {
+      border: 1px solid var(--warn-bd);
+      border-radius: var(--radius);
+      background: var(--warn-bg);
+      margin-bottom: 0;
+    }
+    .privacy-notice summary {
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--warn-tx);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      user-select: none;
+    }
+    .privacy-notice summary::-webkit-details-marker { display: none; }
+    .privacy-notice summary::before {
+      content: '▶';
+      font-size: 0.6rem;
+      transition: transform 0.15s;
+      display: inline-block;
+    }
+    .privacy-notice[open] summary::before { transform: rotate(90deg); }
+    .privacy-notice summary:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: var(--radius);
+    }
+    .privacy-notice-body {
+      padding: 0 0.75rem 0.65rem;
+      font-size: 0.78rem;
+      color: var(--warn-tx);
+      line-height: 1.55;
+    }
+    .privacy-notice-body ul {
+      margin: 0.4rem 0 0 1.1rem;
+    }
+    .privacy-notice-body li {
+      margin-bottom: 0.2rem;
+    }
+
+    /* ── Summary grid ────────────────────────────────────────────── */
+    #summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.65rem 0.5rem 0.5rem;
+      text-align: center;
+      font-size: 0.78rem;
+    }
+    .summary-card .s-date {
+      font-weight: 700;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      display: block;
+      white-space: nowrap;
+    }
+    .summary-card .s-mood {
+      font-size: 1.35rem;
+      display: block;
+      line-height: 1.2;
+    }
+    .summary-card .s-mood-num {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .summary-card .s-row {
+      margin-top: 0.3rem;
+      color: var(--muted);
+    }
+    .summary-card .s-val {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .summary-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      font-style: italic;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Demo disclaimer ──────────────────────────────────────────── -->
+<div class="disclaimer" role="banner" aria-label="Demo notice">
+  ⚠ DEMO ONLY — Fictional data only. Not a clinical tool. Do not enter real personal or client data.
+</div>
+
+<!-- ── Header ───────────────────────────────────────────────────── -->
+<header>
+  <h1>Wellness Log — Demo Only</h1>
+  <p class="subtitle">Log mood, sleep &amp; water. Learning prototype for wellness professionals.</p>
+</header>
+
+<!-- ── Main content ─────────────────────────────────────────────── -->
+<main>
+
+  <!-- ── 1. Entry form ──────────────────────────────────────────── -->
+  <section id="section-form" aria-labelledby="form-heading">
+    <div id="edit-banner" aria-live="polite">✏ Editing existing entry</div>
+    <h2 id="form-heading">Log an Entry</h2>
+
+    <form id="entry-form" novalidate>
+      <div class="field-group">
+
+        <!-- Date -->
+        <div class="field">
+          <label for="f-date">Date <span class="hint">(YYYY-MM-DD)</span></label>
+          <input type="date" id="f-date" name="date"
+                 aria-required="true" aria-describedby="err-date" />
+          <span class="field-error" id="err-date" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Mood -->
+        <div class="field">
+          <label for="f-mood">Mood <span class="hint">(1 = Poor → 5 = Great)</span></label>
+          <select id="f-mood" name="mood"
+                  aria-required="true" aria-describedby="err-mood">
+            <option value="">— select —</option>
+            <option value="1">1 😞 Poor</option>
+            <option value="2">2 😕 Low</option>
+            <option value="3">3 😐 Okay</option>
+            <option value="4">4 🙂 Good</option>
+            <option value="5">5 😊 Great</option>
+          </select>
+          <span class="field-error" id="err-mood" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Sleep -->
+        <div class="field">
+          <label for="f-sleep">Sleep hours <span class="hint">(0 – 24)</span></label>
+          <input type="number" id="f-sleep" name="sleepHours"
+                 min="0" max="24" step="0.5" placeholder="e.g. 7.5"
+                 aria-required="true" aria-describedby="err-sleep" />
+          <span class="field-error" id="err-sleep" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Water -->
+        <div class="field">
+          <label for="f-water">Water glasses <span class="hint">(0 – 20)</span></label>
+          <input type="number" id="f-water" name="waterGlasses"
+                 min="0" max="20" step="1" placeholder="e.g. 8"
+                 aria-required="true" aria-describedby="err-water" />
+          <span class="field-error" id="err-water" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Notes -->
+        <div class="field full">
+          <label for="f-notes">Notes <span class="hint">(optional, max 200 chars)</span></label>
+          <textarea id="f-notes" name="notes" maxlength="200"
+                    rows="2" placeholder="Anything worth noting today? (fictional data only)"
+                    aria-describedby="notes-count err-notes"></textarea>
+          <span class="char-count" id="notes-count" aria-live="polite">0 / 200</span>
+          <span class="field-error" id="err-notes" role="alert" aria-live="polite"></span>
+        </div>
+
+      </div><!-- /.field-group -->
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary" id="btn-submit">Save Entry</button>
+        <button type="button" class="btn-ghost" id="btn-cancel-edit"
+                style="display:none" aria-label="Cancel editing and reset form">Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── Privacy / storage notice ──────────────────────────────── -->
+  <details class="privacy-notice" aria-label="Data storage and privacy information">
+    <summary>🔒 Data storage &amp; privacy — read before sharing</summary>
+    <div class="privacy-notice-body">
+      <strong>Demo only: fictional data only.</strong>
+      <ul>
+        <li><strong>localStorage is browser-local.</strong> Data is stored only in this browser on this device. It is not sent anywhere.</li>
+        <li><strong>localStorage is not encrypted.</strong> Anyone with access to this browser profile can read or clear it via the browser's developer tools.</li>
+        <li><strong>Not suitable for real personal or client data.</strong> Do not log real names, real dates of birth, or any identifiable health information.</li>
+        <li><strong>No accounts, no server, no network calls.</strong> This file makes zero outbound requests. Open your browser's Network tab to confirm.</li>
+        <li><strong>Not a clinical tool.</strong> Nothing in this prototype constitutes medical advice, diagnosis, or treatment guidance.</li>
+        <li><strong>Clear data at any time</strong> using the "Erase all demo entries" button, or via your browser's Application → Storage panel.</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- ── 2. Recent entries ───────────────────────────────────────── -->
+  <section id="section-list" aria-labelledby="list-heading">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;padding-bottom:0.4rem;border-bottom:2px solid var(--border);">
+      <h2 id="list-heading" style="margin:0;border:none;padding:0;">Recent Entries</h2>
+      <button type="button" id="btn-erase-all" class="btn-danger-ghost"
+              aria-label="Erase all demo entries from local storage"
+              style="font-size:0.78rem;">⚠ Erase all demo entries</button>
+    </div>
+    <div id="entries-container" role="list" aria-live="polite" aria-label="Log entries"></div>
+  </section>
+
+  <!-- ── 3. 7-entry summary ─────────────────────────────────────── -->
+  <section id="section-summary" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">Last 7 Entries — Summary
+      <span style="font-weight:400;font-size:0.75rem;color:#854d0e;margin-left:0.5rem;">
+        Demo only — fictional data
+      </span>
+    </h2>
+
+    <!-- Stats bar: averages over the most recent 7 entries -->
+    <p class="stats-disclaimer" role="note">
+      Personal demo trends only — not medical findings. Figures cover the most recent 7 logged entries.
+    </p>
+    <div id="stats-bar" aria-label="Summary statistics for last 7 entries"></div>
+
+    <div id="summary-grid" role="list" aria-label="7-entry summary"></div>
+    <p class="summary-note">
+      Figures reflect fictional demo entries only. These are not medical findings, clinical assessments, or recommendations of any kind.
+    </p>
+  </section>
+
+</main>
+
+<!-- ── Footer ───────────────────────────────────────────────────── -->
+<footer>
+  <strong>DEMO ONLY — fictional data only.</strong>
+  Not a clinical tool. Do not enter real personal or client data. &nbsp;|&nbsp; Wellness Log — Learning Prototype
+</footer>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════
+   DATA LAYER
+   ══════════════════════════════════════════════════════════════════ */
+const STORAGE_KEY     = 'wellness-tracker-demo-v1';
+const STORAGE_KEY_OLD = 'wellnessMvpEntries'; // legacy key — migrated on startup
+
+const MOOD_EMOJI = { 1:'😞', 2:'😕', 3:'😐', 4:'🙂', 5:'😊' };
+
+function loadEntries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return arr.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  } catch {
+    return [];
+  }
+}
+
+function saveEntries(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function validateFields(fields) {
+  const errors = [];
+
+  // date
+  if (!fields.date || !/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) {
+    errors.push({ field: 'date', message: 'Enter a valid date.' });
+  }
+
+  // mood
+  const mood = parseInt(fields.mood, 10);
+  if (!fields.mood || isNaN(mood) || mood < 1 || mood > 5) {
+    errors.push({ field: 'mood', message: 'Select a mood from 1 to 5.' });
+  }
+
+  // sleep
+  const sleep = parseFloat(fields.sleepHours);
+  if (fields.sleepHours === '' || fields.sleepHours === null || fields.sleepHours === undefined ||
+      isNaN(sleep) || sleep < 0 || sleep > 24) {
+    errors.push({ field: 'sleepHours', message: 'Enter sleep hours between 0 and 24.' });
+  }
+
+  // water
+  const water = parseInt(fields.waterGlasses, 10);
+  if (fields.waterGlasses === '' || fields.waterGlasses === null || fields.waterGlasses === undefined ||
+      isNaN(water) || water < 0 || water > 20) {
+    errors.push({ field: 'waterGlasses', message: 'Enter glasses between 0 and 20.' });
+  }
+
+  // notes
+  const notes = (fields.notes || '').trim();
+  if (notes.length > 200) {
+    errors.push({ field: 'notes', message: 'Notes must be 200 characters or fewer.' });
+  }
+
+  return errors;
+}
+
+function addEntry(fields) {
+  const errors = validateFields(fields);
+  if (errors.length) return { ok: false, errors };
+
+  const entries = loadEntries();
+  const dup = entries.find(e => e.date === fields.date);
+  if (dup) {
+    return { ok: false, errors: [{ field: 'date',
+      message: 'An entry for this date already exists. Use Edit to update it.' }] };
+  }
+
+  const entry = {
+    id:           (typeof crypto !== 'undefined' && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : String(Date.now()),
+    date:         fields.date,
+    mood:         parseInt(fields.mood, 10),
+    sleepHours:   parseFloat(parseFloat(fields.sleepHours).toFixed(1)),
+    waterGlasses: parseInt(fields.waterGlasses, 10),
+    notes:        (fields.notes || '').trim()
+  };
+
+  entries.push(entry);
+  saveEntries(entries);
+  return { ok: true };
+}
+
+function updateEntry(id, fields) {
+  const errors = validateFields(fields);
+  if (errors.length) return { ok: false, errors };
+
+  const entries = loadEntries();
+  const idx = entries.findIndex(e => e.id === id);
+  if (idx === -1) return { ok: false, errors: [{ field: 'date', message: 'Entry not found.' }] };
+
+  // duplicate-date check (exclude the entry being edited)
+  const dup = entries.find(e => e.date === fields.date && e.id !== id);
+  if (dup) {
+    return { ok: false, errors: [{ field: 'date',
+      message: 'Another entry already exists for that date.' }] };
+  }
+
+  entries[idx] = {
+    ...entries[idx],
+    date:         fields.date,
+    mood:         parseInt(fields.mood, 10),
+    sleepHours:   parseFloat(parseFloat(fields.sleepHours).toFixed(1)),
+    waterGlasses: parseInt(fields.waterGlasses, 10),
+    notes:        (fields.notes || '').trim()
+  };
+
+  saveEntries(entries);
+  return { ok: true };
+}
+
+function deleteEntry(id) {
+  const entries = loadEntries().filter(e => e.id !== id);
+  saveEntries(entries);
+  return { ok: true };
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   KEY MIGRATION — move data from old key to new key once
+   ══════════════════════════════════════════════════════════════════ */
+function migrateOldKey() {
+  if (localStorage.getItem(STORAGE_KEY)) return;       // new key already exists
+  const old = localStorage.getItem(STORAGE_KEY_OLD);
+  if (!old) return;                                     // nothing to migrate
+  localStorage.setItem(STORAGE_KEY, old);
+  localStorage.removeItem(STORAGE_KEY_OLD);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SEED DATA — fictional only
+   ══════════════════════════════════════════════════════════════════ */
+function seedDemoData() {
+  if (localStorage.getItem(STORAGE_KEY)) return; // already has data
+  const seed = [
+    { id: 'seed-1', date: '2025-07-07', mood: 3, sleepHours: 6.5, waterGlasses: 5,
+      notes: 'Busy Monday, skipped afternoon break' },
+    { id: 'seed-2', date: '2025-07-08', mood: 2, sleepHours: 5.0, waterGlasses: 3,
+      notes: 'Late night, felt sluggish all day' },
+    { id: 'seed-3', date: '2025-07-09', mood: 4, sleepHours: 7.5, waterGlasses: 8,
+      notes: 'Morning walk helped, felt more focused' }
+  ];
+  saveEntries(seed);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOM HELPERS
+   ══════════════════════════════════════════════════════════════════ */
+const form        = document.getElementById('entry-form');
+const fDate       = document.getElementById('f-date');
+const fMood       = document.getElementById('f-mood');
+const fSleep      = document.getElementById('f-sleep');
+const fWater      = document.getElementById('f-water');
+const fNotes      = document.getElementById('f-notes');
+const btnSubmit   = document.getElementById('btn-submit');
+const btnCancel   = document.getElementById('btn-cancel-edit');
+const formSection = document.getElementById('section-form');
+const notesCount  = document.getElementById('notes-count');
+
+let editingId = null; // null = add mode, string = edit mode
+
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(el => { el.textContent = ''; });
+}
+
+const FIELD_TO_ERR = {
+  date:         'err-date',
+  mood:         'err-mood',
+  sleepHours:   'err-sleep',
+  waterGlasses: 'err-water',
+  notes:        'err-notes'
+};
+
+function renderFormErrors(errors) {
+  clearErrors();
+  errors.forEach(({ field, message }) => {
+    const el = document.getElementById(FIELD_TO_ERR[field]);
+    if (el) el.textContent = message;
+  });
+}
+
+function getFormFields() {
+  return {
+    date:         fDate.value.trim(),
+    mood:         fMood.value,
+    sleepHours:   fSleep.value,
+    waterGlasses: fWater.value,
+    notes:        fNotes.value
+  };
+}
+
+function resetForm() {
+  form.reset();
+  clearErrors();
+  notesCount.textContent = '0 / 200';
+  notesCount.classList.remove('over');
+  // default date to today
+  fDate.value = new Date().toISOString().slice(0, 10);
+}
+
+function enterEditMode(entry) {
+  editingId = entry.id;
+  fDate.value  = entry.date;
+  fMood.value  = entry.mood;
+  fSleep.value = entry.sleepHours;
+  fWater.value = entry.waterGlasses;
+  fNotes.value = entry.notes || '';
+  updateNotesCount();
+  clearErrors();
+  btnSubmit.textContent = 'Update Entry';
+  btnCancel.style.display = 'inline-flex';
+  formSection.classList.add('edit-mode');
+  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  fDate.focus();
+}
+
+function exitEditMode() {
+  editingId = null;
+  btnSubmit.textContent = 'Save Entry';
+  btnCancel.style.display = 'none';
+  formSection.classList.remove('edit-mode');
+  resetForm();
+}
+
+function updateNotesCount() {
+  const len = fNotes.value.length;
+  notesCount.textContent = len + ' / 200';
+  notesCount.classList.toggle('over', len > 200);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER — list
+   All user-supplied text is set via .textContent — never innerHTML.
+   ══════════════════════════════════════════════════════════════════ */
+function makeEl(tag, props) {
+  const el = document.createElement(tag);
+  if (props) Object.assign(el, props);
+  return el;
+}
+
+function renderList() {
+  const container = document.getElementById('entries-container');
+  const entries   = loadEntries();
+  container.innerHTML = ''; // clear previous — only structural, no user text
+
+  if (!entries.length) {
+    const empty = makeEl('div', { className: 'empty-state' });
+    empty.textContent = 'No entries yet. Fill in the form above to add your first log.';
+    container.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(e => {
+    const emoji = MOOD_EMOJI[e.mood] || '';
+
+    // Card wrapper
+    const card = makeEl('div', { className: 'entry-card', role: 'listitem' });
+
+    // Left column
+    const left = makeEl('div');
+
+    // Meta row
+    const meta = makeEl('div', { className: 'entry-meta' });
+
+    const dateSpan = makeEl('span', { className: 'entry-date' });
+    dateSpan.textContent = e.date;
+
+    const moodPill = makeEl('span', { className: 'entry-pill', title: 'Mood' });
+    moodPill.textContent = emoji + ' Mood ' + e.mood + '/5';
+
+    const sleepPill = makeEl('span', { className: 'entry-pill', title: 'Sleep' });
+    sleepPill.textContent = '💤 ' + e.sleepHours + 'h sleep';
+
+    const waterPill = makeEl('span', { className: 'entry-pill', title: 'Water' });
+    waterPill.textContent = '💧 ' + e.waterGlasses + ' glasses';
+
+    meta.append(dateSpan, moodPill, sleepPill, waterPill);
+    left.appendChild(meta);
+
+    // Notes (optional)
+    if (e.notes) {
+      const notesSpan = makeEl('span', { className: 'entry-notes' });
+      const truncated  = e.notes.length > 100 ? e.notes.slice(0, 100) + '…' : e.notes;
+      notesSpan.textContent = '\u201C' + truncated + '\u201D'; // curly quotes via unicode
+      left.appendChild(notesSpan);
+    }
+
+    // Action buttons
+    const actions = makeEl('div', { className: 'entry-actions' });
+
+    const editBtn = makeEl('button', { className: 'btn-edit' });
+    editBtn.textContent = 'Edit';
+    editBtn.dataset.action = 'edit';
+    editBtn.dataset.id     = e.id;
+    editBtn.setAttribute('aria-label', 'Edit entry for ' + e.date);
+
+    const delBtn = makeEl('button', { className: 'btn-danger-ghost' });
+    delBtn.textContent = 'Delete';
+    delBtn.dataset.action = 'delete';
+    delBtn.dataset.id     = e.id;
+    delBtn.setAttribute('aria-label', 'Delete entry for ' + e.date);
+
+    actions.append(editBtn, delBtn);
+    card.append(left, actions);
+    container.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER — summary
+   All user-supplied text is set via .textContent — never innerHTML.
+   ══════════════════════════════════════════════════════════════════ */
+function renderSummary() {
+  const grid   = document.getElementById('summary-grid');
+  const recent = loadEntries().slice(0, 7);
+  grid.innerHTML = ''; // clear structural shell only — no user text here
+
+  if (!recent.length) {
+    const msg = makeEl('p');
+    msg.style.cssText = 'color:var(--muted);font-size:0.85rem;';
+    msg.textContent = 'No entries to summarise yet.';
+    grid.appendChild(msg);
+    return;
+  }
+
+  recent.forEach(e => {
+    const emoji     = MOOD_EMOJI[e.mood] || '';
+    const shortDate = e.date.slice(5); // MM-DD (stored as YYYY-MM-DD — safe to slice)
+
+    const card = makeEl('div', { className: 'summary-card', role: 'listitem' });
+    card.setAttribute('aria-label', 'Entry ' + e.date);
+
+    const dateSpan = makeEl('span', { className: 's-date' });
+    dateSpan.textContent = shortDate;
+
+    const moodSpan = makeEl('span', { className: 's-mood' });
+    moodSpan.title = 'Mood ' + e.mood + '/5';
+    moodSpan.textContent = emoji;
+
+    const moodNum = makeEl('span', { className: 's-mood-num' });
+    moodNum.textContent = 'mood ' + e.mood + '/5';
+
+    const sleepRow = makeEl('div', { className: 's-row' });
+    const sleepVal = makeEl('span', { className: 's-val' });
+    sleepVal.textContent = e.sleepHours + 'h';
+    sleepRow.append('💤 ', sleepVal);
+
+    const waterRow = makeEl('div', { className: 's-row' });
+    const waterVal = makeEl('span', { className: 's-val' });
+    waterVal.textContent = String(e.waterGlasses);
+    waterRow.append('💧 ', waterVal);
+
+    card.append(dateSpan, moodSpan, moodNum, sleepRow, waterRow);
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ERASE ALL
+   ══════════════════════════════════════════════════════════════════ */
+function eraseAll() {
+  if (!window.confirm(
+    'Erase ALL demo entries?\n\nThis will remove every entry from local storage and cannot be undone.'
+  )) return;
+  localStorage.removeItem(STORAGE_KEY);
+  if (editingId) exitEditMode();
+  refreshAll();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   UTIL — escHtml kept for any future template use
+   ══════════════════════════════════════════════════════════════════ */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER — stats bar
+   Computes entry count, avg mood, avg sleep, avg water over the
+   most recent 7 entries. All text via .textContent — no innerHTML.
+   ══════════════════════════════════════════════════════════════════ */
+function renderStats() {
+  const bar     = document.getElementById('stats-bar');
+  const entries = loadEntries().slice(0, 7);
+  bar.innerHTML = ''; // structural clear — no user text present
+
+  if (!entries.length) {
+    const msg = makeEl('p', { className: 'stats-empty' });
+    msg.textContent = 'No entries yet.';
+    bar.appendChild(msg);
+    return;
+  }
+
+  const count = entries.length;
+  const avg = function (getter) {
+    return (entries.reduce(function (s, e) { return s + getter(e); }, 0) / count);
+  };
+
+  const avgMood  = avg(function (e) { return e.mood; });
+  const avgSleep = avg(function (e) { return e.sleepHours; });
+  const avgWater = avg(function (e) { return e.waterGlasses; });
+
+  var tiles = [
+    { label: 'Entries',    value: count,                   unit: 'of last 7'  },
+    { label: 'Avg Mood',   value: avgMood.toFixed(1),      unit: '/ 5'        },
+    { label: 'Avg Sleep',  value: avgSleep.toFixed(1),     unit: 'hrs'        },
+    { label: 'Avg Water',  value: avgWater.toFixed(1),     unit: 'glasses'    }
+  ];
+
+  tiles.forEach(function (t) {
+    var tile  = makeEl('div', { className: 'stat-tile' });
+    var lbl   = makeEl('span', { className: 'st-label' });
+    var val   = makeEl('span', { className: 'st-value' });
+    var unit  = makeEl('span', { className: 'st-unit' });
+    lbl.textContent  = t.label;
+    val.textContent  = String(t.value);
+    unit.textContent = t.unit;
+    val.appendChild(document.createTextNode(' ')); // space before unit
+    val.appendChild(unit);
+    tile.append(lbl, val);
+    bar.appendChild(tile);
+  });
+}
+
+function refreshAll() {
+  renderList();
+  renderStats();
+  renderSummary();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   EVENT HANDLERS
+   ══════════════════════════════════════════════════════════════════ */
+
+// Form submit
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const fields = getFormFields();
+
+  if (editingId) {
+    const result = updateEntry(editingId, fields);
+    if (!result.ok) { renderFormErrors(result.errors); return; }
+    exitEditMode();
+  } else {
+    const result = addEntry(fields);
+    if (!result.ok) { renderFormErrors(result.errors); return; }
+    clearErrors();
+    resetForm();
+  }
+
+  refreshAll();
+});
+
+// Cancel edit
+btnCancel.addEventListener('click', exitEditMode);
+
+// Notes character count
+fNotes.addEventListener('input', updateNotesCount);
+
+// Delegated list actions (edit / delete)
+document.getElementById('entries-container').addEventListener('click', function (e) {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+
+  const id     = btn.dataset.id;
+  const action = btn.dataset.action;
+
+  if (action === 'delete') {
+    if (!window.confirm('Delete this entry? This cannot be undone.')) return;
+    deleteEntry(id);
+    if (editingId === id) exitEditMode();
+    refreshAll();
+  }
+
+  if (action === 'edit') {
+    const entry = loadEntries().find(e => e.id === id);
+    if (entry) enterEditMode(entry);
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════
+   EVENT — Erase all button
+   ══════════════════════════════════════════════════════════════════ */
+document.getElementById('btn-erase-all').addEventListener('click', eraseAll);
+
+/* ══════════════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════════════ */
+migrateOldKey();  // move data from old storage key to new key, if needed
+seedDemoData();   // pre-load fictional entries on first run
+resetForm();      // default date to today, clear fields
+refreshAll();
+</script>
+
+</body>
+</html>
